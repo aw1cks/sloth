@@ -1,14 +1,18 @@
+mkosi/mkosi.skeleton/var/opt/ansible:
+	@mkdir -pv mkosi/mkosi.skeleton/var/opt/ansible
 ansible: mkosi/mkosi.skeleton/var/opt/ansible
-	@find mkosi/mkosi.skeleton/var/opt/ansible -mindepth 1 -not -name .keep -delete -print
+	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
 	@cp -rv ansible mkosi/mkosi.skeleton/var/opt/
 	@tree mkosi/mkosi.skeleton/var/opt/ 
 
 artefacts/seed.iso:
+	@mkdir -pv artefacts
 cloudinit: artefacts/seed.iso
 	@genisoimage -output artefacts/seed.iso -volid cidata -joliet -rock cloud-init/*
 	@tree artefacts
 
 artefacts/archlinux.img:
+	@mkdir -pv artefacts
 img: ansible cloudinit artefacts/archlinux.img 
 	@cd mkosi; sudo mkosi --force
 img-stty: ansible cloudinit artefacts/archlinux.img
@@ -24,8 +28,8 @@ qemu: img-stty
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 
 clean:
-	@find mkosi/mkosi.skeleton/var/opt/ansible -mindepth 1 -not -name .keep -delete -print
-	@find artefacts -mindepth 1 -not -name .keep -delete -print
+	@rm -rfv artefacts/
+	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
 
 distclean: clean
 	@sudo find mkosi/mkosi.cache/ -mindepth 1 -not -name .keep -delete -print
