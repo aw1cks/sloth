@@ -16,13 +16,13 @@ Clone this repository, build the image, and `dd` it to your disk.
 ## Golden Image
 
 ```shell
-$ ./build.sh
+$ make img
 ```
 
 ### Testing with QEMU
 
 ```shell
-$ ./build_qemu.sh
+$ make qemu
 ```
 
 ### Copying to bare-metal
