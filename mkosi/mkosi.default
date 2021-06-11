@@ -1,0 +1,30 @@
+[Distribution]
+Distribution=arch
+
+[Packages]
+Packages=
+         ansible
+         base-devel
+         cloud-guest-utils
+         cloud-init
+         cloud-utils
+         dhcpcd
+         git
+         go
+         neovim
+         netplan
+         openssh
+         tmux
+         wget
+
+[Output]
+Format=gpt_btrfs
+Bootable=yes
+WithUnifiedKernelImages=no
+Output=../artefacts/archlinux.img
+#KernelCommandLine=!* selinux=0 audit=0 rw
+KernelCommandLine=!* console=ttyS0 selinux=0 audit=0 rw
+RootSize=10G
+
+[Validation]
+Password=init

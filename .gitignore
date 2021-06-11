@@ -1,0 +1,20 @@
+# Don't include any artefacts
+artefacts/*
+!artefacts/.keep
+
+# These are the 'local' modified copies
+ansible/
+cloud-init/
+
+# Make sure we have a directory for ansible conf
+# But don't keep our ansible tree there
+mkosi/mkosi.skeleton/var/opt/ansible/*
+!mkosi/mkosi.skeleton/var/opt/ansible/.keep
+
+# Make sure we have a mkosi.cache dir
+# But don't push the packages to the repo
+mkosi/mkosi.cache/*
+!mkosi/mkosi.cache/.keep
+
+# venv for installing mkosi, if needed
+venv/

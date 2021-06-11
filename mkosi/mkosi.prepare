@@ -1,0 +1,22 @@
+#!/bin/bash
+echo "EDITOR='nvim'
+alias vim='nvim'
+alias vi='nvim'" > /etc/profile.d/editor.sh
+
+# Create AUR user
+sudo useradd -u 500 -g nobody -b /var/opt -m aurbuilder
+echo 'aurbuilder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/10-aurbuilder
+
+# Install yay
+TMPDIR="$(sudo -u aurbuilder mktemp -d)"
+pushd "${TMPDIR}" || exit 1
+curl -sL https://aur.archlinux.org/cgit/aur.git/snapshot/yay.tar.gz | sudo -u aurbuilder tar --strip-components=1 -xvzf - -C "${TMPDIR}"
+sudo -u aurbuilder makepkg -si --noconfirm
+popd || exit 1
+rm -rf "${TMPDIR}"
+
+# Install ansible AUR module
+sudo -u aurbuilder yay -S --noconfirm ansible-aur-git
+
+# Enable cloud-init
+systemctl enable cloud-init cloud-config cloud-final
