@@ -1,0 +1,4 @@
+#cloud-config
+instance-id: laptop
+local-hostname: laptop
+fqdn: laptop.my.domain.com

@@ -1,3 +1,9 @@
+ansible_example:
+	@cp -rv examples/ansible .
+cloud-init_example:
+	@cp -rv examples/cloud-init .
+example_conf: ansible_example cloud-init_example
+
 mkosi/mkosi.skeleton/var/opt/ansible:
 	@mkdir -pv mkosi/mkosi.skeleton/var/opt/ansible
 ansible: mkosi/mkosi.skeleton/var/opt/ansible
@@ -13,9 +19,11 @@ cloudinit: artefacts/seed.iso
 
 artefacts/archlinux.img:
 	@mkdir -pv artefacts
-img: ansible cloudinit artefacts/archlinux.img 
+mkosi_cache:
+	@mkdir -pv mkosi/mkosi.cache
+img: ansible cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --force
-img-stty: ansible cloudinit artefacts/archlinux.img
+img-stty: ansible cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --kernel-command-line='!* console=ttyS0 selinux=0 audit=0 rw' --force
 
 qemu: img-stty
@@ -32,4 +40,4 @@ clean:
 	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
 
 distclean: clean
-	@sudo find mkosi/mkosi.cache/ -mindepth 1 -not -name .keep -delete -print
+	@rm -rf mkosi/mkosi.cache

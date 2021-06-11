@@ -1,0 +1,28 @@
+#cloud-config
+cloud_config_modules:
+  - runcmd
+cloud_final_modules:
+  - rightscale_userdata
+  - scripts-per-once
+  - scripts-per-boot
+  - scripts-per-instance
+  - scripts-user
+  - ssh-authkey-fingerprints
+  - keys-to-console
+  - phone-home
+  - final-message
+  - power_state_change
+users:
+  - name: alex
+    gecos: Alex
+    lock-passwd: false
+    passwd: 'mysecurepassword'
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    chpasswd:
+      - expire: False
+runcmd:
+  - '/bootstrap.sh'
+power_state:
+  delay: '+1'
+  mode: reboot
+  timeout: 10

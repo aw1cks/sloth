@@ -4,9 +4,13 @@ artefacts/
 # These are the 'local' modified copies
 ansible/
 cloud-init/
+!examples/*
 
 # Copied Ansible tree
 mkosi/mkosi.skeleton/var/opt/
+
+# Don't add the cache
+mkosi/mkosi.cache
 
 # venv for installing mkosi, if needed
 venv/

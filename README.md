@@ -6,12 +6,35 @@ This is a hands-off provisioning method primarily intended for installing Arch L
 
 Clone this repository, build the image, and `dd` it to your disk.
 
+## Requirements
+
+### Building the image
+
+ - `arch-install-scripts`
+ - `genisoimage`
+ - `mkosi` and its requirements
+
+### Testing the image in a VM
+
+ - `edk2-ovmf`
+ - `qemu`
+
 ## How this works
 
  - An ISO containing cloud-init config is created (`seed.iso`)
  - A golden image is created using `mkosi` (`archlinux.img`)
  - The cloud-init config from `seed.iso` is used at first boot
  - The provisioning script is run, which runs `ansible` on the machine against itself
+
+To use this, place your ansible config under `ansible/` and cloud-init files in `cloud-init`
+
+Examples are available in `examples`.
+
+For a quick start to see this in action:
+
+```shell
+$ make example_conf qemu
+```
 
 ## Golden Image
 

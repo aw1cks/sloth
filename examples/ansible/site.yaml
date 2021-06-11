@@ -1,0 +1,9 @@
+---
+
+ - name: Arch Linux post-provisioning
+   hosts: localhost
+   tasks:
+     - name: Install package from AUR
+       aur:
+         name: yay
+         state: present
