@@ -26,9 +26,9 @@ Clone this repository, build the image, and `dd` it to your disk.
  - The cloud-init config from `seed.iso` is used at first boot
  - The provisioning script is run, which runs `ansible` on the machine against itself
 
-To use this, place your ansible config under `ansible/` and cloud-init files in `cloud-init`
+To use this, place your ansible config under `ansible/` and cloud-init files under `cloud-init/`.
 
-Examples are available in `examples`.
+Examples are available in `examples/`.
 
 For a quick start to see this in action:
 
@@ -56,7 +56,7 @@ $ make qemu
 
 ## Ansible
 
-Example configuration can be found under `ansible/`.
+Example configuration can be found under `examples/ansible/`.
 
 The [AUR module](https://github.com/kewlfft/ansible-aur) is baked into the golden image, along with `yay`.
 
