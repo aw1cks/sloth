@@ -18,5 +18,9 @@ rm -rf "${TMPDIR}"
 # Install ansible AUR module
 sudo -u aurbuilder yay -S --noconfirm ansible-aur-git
 
+# Set some default repos
+echo 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch
+Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
+
 # Enable cloud-init
 systemctl enable cloud-init cloud-config cloud-final

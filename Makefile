@@ -32,6 +32,8 @@ qemu: img-stty
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
 	  -nographic \
 	  -m 1024 -smp 4 \
+	  -netdev user,id=ens3 \
+	  -device e1000,netdev=ens3 \
 	  -drive file=artefacts/archlinux.img,if=virtio,format=raw \
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 

@@ -2,6 +2,7 @@
 Distribution=arch
 
 [Packages]
+WithNetwork=yes
 Packages=
          ansible
          base-devel
@@ -14,6 +15,7 @@ Packages=
          neovim
          netplan
          openssh
+         reflector
          tmux
          wget
 
