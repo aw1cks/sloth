@@ -9,9 +9,11 @@ Packages=
          cloud-guest-utils
          cloud-init
          cloud-utils
+         crda
          dhcpcd
          git
          go
+         linux-firmware
          neovim
          netplan
          openssh
@@ -26,7 +28,7 @@ WithUnifiedKernelImages=no
 Output=../artefacts/archlinux.img
 #KernelCommandLine=!* selinux=0 audit=0 rw
 KernelCommandLine=!* console=ttyS0 selinux=0 audit=0 rw
-RootSize=10G
+RootSize=20G
 
 [Validation]
 Password=init
