@@ -3,7 +3,7 @@
 if [ -d /var/opt/ansible ]
 then
   cd /var/opt/ansible
-  ansible-playbook site.yaml
+  ansible-playbook site.yaml -t postinst
 fi
 
 if [ -d /var/opt/ansible/tests ]
