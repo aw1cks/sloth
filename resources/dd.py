@@ -69,7 +69,7 @@ def menu(stdscr):
             # Then move down 2 lines, print our error, move back
             cur_y, _ = stdscr.getyx()
             stdscr.move(cur_y + 2, horizontal_padding)
-            stdscr.addstr("Enter a valid choice between 1 and {}".format(len(disks) + 1))
+            stdscr.addstr("Enter a valid choice between 1 and {}".format(len(disks)))
             stdscr.move(cur_y, horizontal_padding)
             time.sleep(0.3)
 
