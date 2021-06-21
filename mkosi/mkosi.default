@@ -16,6 +16,7 @@ Packages=
          linux-firmware
          neovim
          netplan
+         networkmanager
          openssh
          reflector
          tmux

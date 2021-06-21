@@ -14,6 +14,10 @@ Clone this repository, build the image, and `dd` it to your disk.
  - `genisoimage`
  - `mkosi` and its requirements
 
+### Building the bootstrap ISO
+
+ - `archiso`
+
 ### Testing the image in a VM
 
  - `edk2-ovmf`
@@ -24,6 +28,7 @@ Clone this repository, build the image, and `dd` it to your disk.
  - An ISO containing cloud-init config is created (`seed.iso`)
  - A golden image is created using `mkosi` (`archlinux.img`)
  - The cloud-init config from `seed.iso` is used at first boot
+ - For bare-metal, an arch ISO is generated which can be copied to a USB stick, which will automatically `dd` the image to the specified disk
  - The provisioning script is run, which runs `ansible` on the machine against itself
 
 To use this, place your ansible config under `ansible/` and cloud-init files under `cloud-init/`.
@@ -51,8 +56,10 @@ $ make qemu
 ### Copying to bare-metal
 
 ```shell
-# dd if=archlinux.img of=/dev/<your-blockdev> bs=4M status=progress oflag=sync
+$ make usb
 ```
+
+This will dd an ISO to a USB stick. Plug this USB stick in to the target PC, then let it dd the OS to the disk of that machine.
 
 ## Ansible
 

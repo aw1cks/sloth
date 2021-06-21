@@ -12,5 +12,10 @@ mkosi/mkosi.skeleton/var/opt/
 # Don't add the cache
 mkosi/mkosi.cache
 
+# This is fetched from the local system at time of creation
+archlive/
+# Temporary file created by curses menu
+resources/disk
+
 # venv for installing mkosi, if needed
 venv/

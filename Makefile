@@ -28,12 +28,24 @@ img: ansible cloudinit artefacts/archlinux.img mkosi_cache
 img-stty: ansible cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --kernel-command-line='!* console=ttyS0 selinux=0 audit=0 rw' --force
 
+usb:
+	@sudo rm -rfv archlive/ /tmp/archiso/ resources/disk "artefacts/archlinux-ddinst*.iso"
+	@python3 resources/dd.py --noop
+	@cp -rv /usr/share/archiso/configs/baseline/ archlive/
+	@rm -fv archlive/profiledef.sh
+	@mkdir -pv archlive/airootfs/root/ /tmp/archiso
+	@cp -v resources/profiledef.sh archlive/profiledef.sh
+	@cp -v resources/dd.py archlive/airootfs/root/dd.py
+	@cp -v resources/dot_bashrc archlive/airootfs/root/.bashrc
+	@sudo mkarchiso -v -w /tmp/archiso -o artefacts/ archlive
+	@sudo dd if="$$(find artefacts -name 'archlinux-ddinst*')" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
+
 qemu: img-stty
 	@qemu-system-x86_64 \
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
 	  -nographic \
-	  -m 4096 -smp "$(nproc)" \
+	  -m 4096 -smp "$$(nproc)" \
 	  -netdev user,id=ens3 \
 	  -device e1000,netdev=ens3 \
 	  -drive file=artefacts/archlinux.img,if=virtio,format=raw \
@@ -44,15 +56,17 @@ qemushell:
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
 	  -nographic \
-	  -m 4096 -smp "$(nproc)" \
+	  -m 4096 -smp "$$(nproc)" \
 	  -netdev user,id=ens3 \
 	  -device e1000,netdev=ens3 \
 	  -drive file=artefacts/archlinux.img,if=virtio,format=raw \
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 
 clean:
-	@rm -rfv artefacts/
-	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
+	@sudo rm -rfv artefacts/
+	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/
+	@rm -rfv liveboot/
+	@rm -fv resources/disk
 
 distclean: clean
-	@rm -rf mkosi/mkosi.cache
+	@sudo rm -rfv mkosi/mkosi.cache/
