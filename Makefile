@@ -67,8 +67,8 @@ qemushell:
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 
 clean:
-	@sudo rm -rfv artefacts/ archiso.cache/
+	@sudo rm -rfv artefacts/
 	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/ liveboot/ resources/disk
 
 distclean: clean
-	@sudo rm -rfv mkosi/mkosi.cache/
+	@sudo rm -rfv mkosi/mkosi.cache/ archiso.cache/
