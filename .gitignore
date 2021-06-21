@@ -14,6 +14,8 @@ mkosi/mkosi.cache
 
 # This is fetched from the local system at time of creation
 archlive/
+# Cache used my mkarchiso
+archiso.cache
 # Temporary file created by curses menu
 resources/disk
 

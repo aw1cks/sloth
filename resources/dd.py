@@ -15,6 +15,7 @@ import argparse
 import curses
 import os
 import pathlib
+import subprocess
 import sys
 import time
 
@@ -75,8 +76,7 @@ def menu(stdscr):
 
 
 def diskdestroyer(disk):
-    #subprocess.run("dd if=/archlinux.img of={} bs=4M status=progress conv=fsync".format(disk).split(" "))
-    print("dd if=/archlinux.img of={} bs=4M status=progress conv=fsync".format(disk).split(" "))
+    subprocess.run("dd if=/archlinux.img of={} bs=4M status=progress conv=fsync".format(disk).split(" "))
 
 
 def main():

@@ -28,17 +28,21 @@ img: ansible cloudinit artefacts/archlinux.img mkosi_cache
 img-stty: ansible cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --kernel-command-line='!* console=ttyS0 selinux=0 audit=0 rw' --force
 
-usb:
-	@sudo rm -rfv archlive/ /tmp/archiso/ resources/disk "artefacts/archlinux-ddinst*.iso"
+usbselect:
+	@rm -fv resources/disk
 	@python3 resources/dd.py --noop
+usb: usbselect img
+	@sudo rm -rfv archlive/ archiso.cache/ "artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso"
 	@cp -rv /usr/share/archiso/configs/baseline/ archlive/
+	@cp -rv /usr/share/archiso/configs/releng/airootfs/etc/systemd/system/getty@tty1.service.d/ archlive/airootfs/etc/systemd/system/
+	@sudo mv -fv artefacts/archlinux.img archlive/airootfs/
 	@rm -fv archlive/profiledef.sh
-	@mkdir -pv archlive/airootfs/root/ /tmp/archiso
+	@mkdir -pv archlive/airootfs/root/ archiso.cache/
 	@cp -v resources/profiledef.sh archlive/profiledef.sh
 	@cp -v resources/dd.py archlive/airootfs/root/dd.py
-	@cp -v resources/dot_bashrc archlive/airootfs/root/.bashrc
-	@sudo mkarchiso -v -w /tmp/archiso -o artefacts/ archlive
-	@sudo dd if="$$(find artefacts -name 'archlinux-ddinst*')" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
+	@cp -v resources/dot_bashlogin archlive/airootfs/root/.bash_login
+	@sudo mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
+	@sudo dd if="artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
 
 qemu: img-stty
 	@qemu-system-x86_64 \
@@ -63,10 +67,8 @@ qemushell:
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 
 clean:
-	@sudo rm -rfv artefacts/
-	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/
-	@rm -rfv liveboot/
-	@rm -fv resources/disk
+	@sudo rm -rfv artefacts/ archiso.cache/
+	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/ liveboot/ resources/disk
 
 distclean: clean
 	@sudo rm -rfv mkosi/mkosi.cache/
