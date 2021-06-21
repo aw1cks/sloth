@@ -31,6 +31,11 @@ img-stty: ansible cloudinit artefacts/archlinux.img mkosi_cache
 usbselect:
 	@rm -fv resources/disk
 	@python3 resources/dd.py --noop
+# To find the command to re-pack the iso, use bash -x on the script e.g.
+# sudo bash -x /usr/bin/mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
+# Look for xorriso in the output
+# Original command:
+# xorriso -as mkisofs -iso-level 3 -full-iso9660-filenames -joliet -joliet-long -rational-rock -volid ARCH_202106 -appid 'Sloth Bootstrap environment' -publisher 'Alex Wicks <https://github.com/aw1cks>' -preparer 'prepared by mkarchiso' -isohybrid-mbr /home/alex/sloth/archiso.cache/iso/syslinux/isohdpfx.bin --mbr-force-bootable -partition_offset 16 -eltorito-boot syslinux/isolinux.bin -eltorito-catalog syslinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -append_partition 2 C12A7328-F81F-11D2-BA4B-00A0C93EC93B /home/alex/sloth/archiso.cache/efiboot.img -eltorito-alt-boot -e --interval:appended_partition_2:all:: -no-emul-boot -isohybrid-gpt-basdat -output /home/alex/sloth/artefacts/archlinux-ddinst-2021.06.21-x86_64.iso /home/alex/sloth/archiso.cache/iso/
 usb: usbselect img
 	@sudo rm -rfv archlive/ archiso.cache/ "artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso"
 	@cp -rv /usr/share/archiso/configs/baseline/ archlive/
@@ -42,6 +47,27 @@ usb: usbselect img
 	@cp -v resources/dd.py archlive/airootfs/root/dd.py
 	@cp -v resources/dot_bashlogin archlive/airootfs/root/.bash_login
 	@sudo mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
+	@find cloud-init -type f -exec cp -v {} archiso.cache/ \;
+	@xorriso \
+	    -as mkisofs -iso-level 3 \
+	    -full-iso9660-filenames \
+	    -joliet -joliet-long \
+	    -rational-rock -volid ARCH_202106 \
+	    -appid 'Sloth Bootstrap environment' \
+	    -publisher 'Alex Wicks <https://github.com/aw1cks>' \
+	    -preparer 'prepared by mkarchiso' \
+	    -isohybrid-mbr /home/alex/sloth/archiso.cache/iso/syslinux/isohdpfx.bin \
+	    --mbr-force-bootable -partition_offset 16 \
+	    -eltorito-boot syslinux/isolinux.bin \
+	    -eltorito-catalog syslinux/boot.cat \
+	    -no-emul-boot -boot-load-size 4 \
+	    -boot-info-table \
+	    -append_partition 2 C12A7328-F81F-11D2-BA4B-00A0C93EC93B /home/alex/sloth/archiso.cache/efiboot.img \
+	    -eltorito-alt-boot \
+	    -e --interval:appended_partition_2:all:: \
+	    -no-emul-boot -isohybrid-gpt-basdat \
+	    -output /home/alex/sloth/artefacts/archlinux-ddinst-2021.06.21-x86_64.iso \
+	    "$${PWD}/archiso.cache/iso/"
 	@sudo dd if="artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
 
 qemu: img-stty
