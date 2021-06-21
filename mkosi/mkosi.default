@@ -28,8 +28,8 @@ Format=gpt_btrfs
 Bootable=yes
 WithUnifiedKernelImages=no
 Output=../artefacts/archlinux.img
-#KernelCommandLine=!* selinux=0 audit=0 rw
-KernelCommandLine=!* console=ttyS0 selinux=0 audit=0 rw
+KernelCommandLine=!* selinux=0 audit=0 rw
+#KernelCommandLine=!* console=ttyS0 selinux=0 audit=0 rw
 RootSize=20G
 
 [Validation]
