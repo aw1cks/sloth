@@ -50,6 +50,7 @@ usb: usbselect img
 	@cp -v resources/dot_bashlogin archlive/airootfs/root/.bash_login
 	@sudo mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
 	@find cloud-init -type f -exec cp -v {} archiso.cache/ \;
+	@rm -fv "artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso"
 	@xorriso \
 	    -as mkisofs -iso-level 3 \
 	    -full-iso9660-filenames \
