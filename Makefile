@@ -37,7 +37,7 @@ usb: usbselect img
 	@cp -rv /usr/share/archiso/configs/baseline/ archlive/
 	@cp -rv /usr/share/archiso/configs/releng/airootfs/etc/systemd/system/getty@tty1.service.d/ archlive/airootfs/etc/systemd/system/
 	@sudo mv -fv artefacts/archlinux.img archlive/airootfs/
-	@rm -fv archlive/profiledef.sh
+	@rm -rfv archlive/profiledef.sh archlive/airootfs/etc/systemd/system/cloud-init.target.wants
 	@mkdir -pv archlive/airootfs/root/ archiso.cache/
 	@cp -v resources/profiledef.sh archlive/profiledef.sh
 	@cp -v resources/dd.py archlive/airootfs/root/dd.py
