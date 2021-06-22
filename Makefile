@@ -44,7 +44,7 @@ usb: usbselect img
 	@cp -v resources/dot_bashlogin archlive/airootfs/root/.bash_login
 	@sudo mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
 	@sudo dd if="artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
-	@printf "%s\nstart=%s, size=102400, type=83\n" "$$(sudo sfdisk -d $$(readlink -f $(cat resources/disk)))" "$(sudo sfdisk -d $(readlink -f $(cat resources/disk)) | tail -1 | awk '{print $4 $6 }' | sed 's/,/ /g' | awk '{print int($$1) + int($$2) + 1}')" | sudo sfdisk "$$(readlink -f $$(cat resources/disk))"
+	@printf "%s\nstart=%s, size=102400, type=83\n" "$$(sudo sfdisk -d $$(readlink -f $$(cat resources/disk)))" "$$(sudo sfdisk -d $$(readlink -f $$(cat resources/disk)) | tail -1 | awk '{print $$4 $$6 }' | sed 's/,/ /g' | awk '{print int($$1) + int($$2) + 1}')" | sudo sfdisk "$$(readlink -f $$(cat resources/disk))"
 	@sudo dd if="artefacts/seed.iso" of="$$(cat resources/disk)-part3" bs=4M status=progress conv=fsync
 qemu: img-stty
 	@qemu-system-x86_64 \
