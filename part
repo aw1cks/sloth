@@ -1,0 +1,8 @@
+label: dos
+label-id: 0xdb75a369
+device: /dev/sdb
+unit: sectors
+sector-size: 512
+
+/dev/sdb1 : start=          64, size=     4358080, type=0, bootable
+/dev/sdb2 : start=     4358144, size=       79872, type=ef

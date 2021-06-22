@@ -1,1 +1,1 @@
-python3 /root/dd.py
+python3 /root/dd.py && systemctl reboot
