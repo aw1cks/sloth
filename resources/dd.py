@@ -73,7 +73,7 @@ def menu(stdscr):
             while(True):
                 time.sleep(0.3)
                 stdscr.clear()
-                stdscr.addstr(vertical_padding, horizontal_padding, disks[int(choice) - 1])
+                stdscr.addstr(vertical_padding, horizontal_padding, disks[int(choice) - 1][0])
                 stdscr.addstr(vertical_padding + 1, horizontal_padding, "WARNING! This disk will be WIPED. Please press 'y' to continue")
                 cur_y, _ = stdscr.getyx()
                 stdscr.move(cur_y + 1, horizontal_padding)
@@ -82,7 +82,7 @@ def menu(stdscr):
                 curses.noecho()
                 if confirmation.lower() == "y":
                     time.sleep(0.3)
-                    return disks[int(choice) - 1]
+                    return disks[int(choice) - 1][0]
                 elif confirmation.lower() == "q":
                     sys.exit(1)
         else:
