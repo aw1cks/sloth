@@ -49,8 +49,6 @@ def menu(stdscr):
                 if i[1] == abs_path
                 and i[0] != disk
             ]
-            with open("log", "a") as f:
-                f.write(str(duplicates))
             for dupe in duplicates:
                 disks.remove(dupe)
 
