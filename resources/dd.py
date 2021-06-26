@@ -28,16 +28,38 @@ def menu(stdscr):
         stdscr.addstr(vertical_padding, horizontal_padding, "Select a disk:\n\n")
         # Get our disks
         # Iterate over /dev/disk/by-id - populated by udev
-        # Use a lambda to add a newline
+        # Use a lambda to add a newline & bundle with absolute path
         disks = list(map(
-            lambda x: str(x) + "\n",
+            lambda x: (str(x) + "\n", pathlib.Path(x).resolve()),
             list(pathlib.Path("/dev/disk/by-id").iterdir()),
         ))
+
         # Filter out partitions
         # Also remove devicemapper devices
-        disks = [ d for d in disks if "part" not in d.split("-")[-1] and (d.split("/")[-1])[:3] != "dm-" ]
+        disks = [
+            d for d in disks
+            if "part" not in d[0].split("-")[-1]
+            and (d[0].split("/")[-1])[:3] != "dm-"
+        ]
+
+        # Remove any duplicates - some devices have multiple IDs
+        for disk, abs_path in disks:
+            duplicates = [
+                i for i in disks
+                if i[1] == abs_path
+                and i[0] != disk
+            ]
+            with open("log", "a") as f:
+                f.write(str(duplicates))
+            for dupe in duplicates:
+                disks.remove(dupe)
+
         # List comprehension to iterate & add the index
-        [ stdscr.addstr("{}{}) {}".format(horizontal_padding_str, disks.index(disk)+1, disk)) for disk in disks ]
+        [
+            stdscr.addstr("{}{}) {}".format(horizontal_padding_str, index+1, disk[0]))
+            for index, disk in enumerate(disks)
+        ]
+
         # Move down a line
         cur_y, _ = stdscr.getyx()
         stdscr.move(cur_y + 1, horizontal_padding)
