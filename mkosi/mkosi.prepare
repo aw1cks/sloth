@@ -23,4 +23,4 @@ echo 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch
 Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
 # Enable cloud-init
-systemctl enable cloud-init cloud-config cloud-final
+systemctl enable cloud-init.service cloud-final.service
