@@ -1,14 +1,22 @@
-.PHONY: clean distclean qemushell
+.PHONY: clean cacheclean distclean qemushell
 
 ansible_example:
 	@cp -rv examples/ansible .
 cloud-init_example:
 	@cp -rv examples/cloud-init .
 example_conf: ansible_example cloud-init_example
+ansible:
+	@mkdir -pv ansible
+	@(cd ansible; repo init \
+	  -u ssh://git@github.com/archlinux-ansible/ansible-manifest \
+	  -m default.xml \
+	  -b master)
+	@(cd ansible; repo sync)
+	@(cd ansible; repo start master --all)
 
 mkosi/mkosi.skeleton/var/opt/ansible:
 	@mkdir -pv mkosi/mkosi.skeleton/var/opt/ansible
-ansible: mkosi/mkosi.skeleton/var/opt/ansible
+ansible_mkosi: mkosi/mkosi.skeleton/var/opt/ansible
 	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
 	@cp -rv ansible mkosi/mkosi.skeleton/var/opt/
 	@tree mkosi/mkosi.skeleton/var/opt/ 
@@ -23,9 +31,9 @@ artefacts/archlinux.img:
 	@mkdir -pv artefacts
 mkosi_cache:
 	@mkdir -pv mkosi/mkosi.cache
-img: ansible cloudinit artefacts/archlinux.img mkosi_cache
+img: ansible_mkosi cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --force
-img-stty: ansible cloudinit artefacts/archlinux.img mkosi_cache
+img-stty: ansible_mkosi cloudinit artefacts/archlinux.img mkosi_cache
 	@cd mkosi; sudo mkosi --kernel-command-line='!* console=ttyS0 selinux=0 audit=0 rw' --force
 
 usbselect:
@@ -69,8 +77,11 @@ qemushell:
 	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
 
 clean:
-	@sudo rm -rfv artefacts/
 	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/ liveboot/ resources/disk
+	@sudo rm -rfv artefacts/
+
+cacheclean: clean
+	@sudo rm -rfv mkosi/mkosi.cache/ archiso.cache/
 
 distclean: clean
-	@sudo rm -rfv mkosi/mkosi.cache/ archiso.cache/
+	@rm -rfv ansible cloud-init
