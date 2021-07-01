@@ -22,5 +22,9 @@ sudo -u aurbuilder yay -S --noconfirm ansible-aur-git
 echo 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch
 Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
+# Work around this issue
+# https://github.com/systemd/mkosi/issues/750
+mv /etc/pacman.d/hooks/91-mkosi-bootctl-update{-,.}hook
+
 # Enable cloud-init
 systemctl enable cloud-init.service cloud-final.service
