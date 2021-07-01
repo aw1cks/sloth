@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set +e
-set +o pipefail 
+set -eo pipefail
 
 # cloud-init creates a new system-id
 # Work around this so the pacman hooks still work
