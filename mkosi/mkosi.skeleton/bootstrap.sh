@@ -50,4 +50,5 @@ fi
 
 systemctl disable cloud-init cloud-config cloud-final
 
+chown -R alex:alex /var/opt/ansible
 rm -rf /bootstrap.sh

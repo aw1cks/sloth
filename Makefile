@@ -24,7 +24,7 @@ ansible_mkosi: mkosi/mkosi.skeleton/var/opt/ansible
 artefacts/seed.iso:
 	@mkdir -pv artefacts
 cloudinit: artefacts/seed.iso
-	@genisoimage -output artefacts/seed.iso -volid cidata -joliet -rock cloud-init/*
+	@cloud-localds -v --network-config=cloud-init/network-config artefacts/seed.iso cloud-init/user-data cloud-init/meta-data
 	@tree artefacts
 
 artefacts/archlinux.img:

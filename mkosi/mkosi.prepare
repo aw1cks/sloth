@@ -22,4 +22,13 @@ sudo -u aurbuilder yay -S --noconfirm ansible-aur-git
 echo 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch
 Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
-systemctl enable cloud-init.service cloud-final.service
+# Cloud-init config
+printf '\ndatasource_list: [ NoCloud ]\n' >> /etc/cloud/cloud.cfg
+printf 'datasource: NoCloud\n' > /etc/cloud/ds-identify.cfg
+
+# Enable cloud-init
+systemctl enable \
+  cloud-init.service \
+  cloud-init-local.service \
+  cloud-config.service \
+  cloud-final.service
