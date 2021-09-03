@@ -1,23 +1,15 @@
 # Don't include any artefacts
 artefacts/
 
+# Created by packer when building image
+packer_cache/
+
 # These are the 'local' modified copies
 ansible/
 cloud-init/
+override/
+packer/http/ansible-tree.tgz
+packer/http/seed.iso
+
 !examples/*
-
-# Copied Ansible tree
-mkosi/mkosi.skeleton/var/opt/
-
-# Don't add the cache
-mkosi/mkosi.cache/
-
-# This is fetched from the local system at time of creation
-archlive/
-# Cache used my mkarchiso
-archiso.cache/
-# Temporary file created by curses menu
-resources/disk
-
-# venv for installing mkosi, if needed
-venv/
+!override/.keep

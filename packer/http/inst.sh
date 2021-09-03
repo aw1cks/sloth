@@ -1,4 +1,13 @@
 #!/bin/bash
+
+set -eo pipefail
+set -x
+
+CRYPT_PASSWD="${1}"
+CRYPT_UUID="${2}"
+
+echo 'root:init' | chpasswd
+
 echo "EDITOR='nvim'
 alias vim='nvim'
 alias vi='nvim'" > /etc/profile.d/editor.sh
@@ -25,6 +34,7 @@ Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/m
 # Cloud-init config
 printf '\ndatasource_list: [ NoCloud ]\n' >> /etc/cloud/cloud.cfg
 printf 'datasource: NoCloud\n' > /etc/cloud/ds-identify.cfg
+rm -fv /etc/ssh/ssh_host_*
 
 # Enable cloud-init
 systemctl enable \
@@ -32,3 +42,41 @@ systemctl enable \
   cloud-init-local.service \
   cloud-config.service \
   cloud-final.service
+
+# Configure dracut
+if [ -n "${CRYPT_PASSWD}" ]
+then
+  mkdir -pv /etc/dracut.conf.d/
+  echo "kernel_cmdline=\"rd.luks.name=${CRYPT_UUID}=root root=/dev/mapper/root\""
+fi
+
+sudo -u aurbuilder yay -S --noconfirm dracut-uefi-hook
+
+# Configure systemd-boot
+bootctl install
+
+# Misc
+echo "HISTFILE=~/.zsh_history
+HISTSIZE=1000
+SAVEHIST=1000
+bindkey -e
+
+autoload -Uz promptinit
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+          promptinit;
+  else
+            promptinit -C;
+fi;
+setopt PROMPT_SUBST
+
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+                compinit;
+        else
+                        compinit -C;
+fi;
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+
+alias ls='ls --color=auto'
+PS1='[%n@%m %~]%# '" > /etc/skel/.zshrc

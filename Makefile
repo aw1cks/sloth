@@ -1,87 +1,89 @@
-.PHONY: clean cacheclean distclean qemushell
+MIRROR ?= https://mirror.bytemark.co.uk
+VERSION ?= 2021.09.01
+CPU_ARCH ?= x86_64
 
-ansible_example:
-	@cp -rv examples/ansible .
-cloud-init_example:
-	@cp -rv examples/cloud-init .
-example_conf: ansible_example cloud-init_example
+ARCH_URL := $(MIRROR)/archlinux/iso/$(VERSION)/archlinux-$(VERSION)-$(CPU_ARCH).iso
+ARCH_CHECKSUM_URL := $(MIRROR)/archlinux/iso/$(VERSION)/sha1sums.txt
+
+QEMU_IMG ?= img
+
+.PHONY: clean
+.PHONY: cloudinit
+.PHONY: ansible
+.PHONY: passwd_prompt
+.PHONY: passwd
+.PHONY: packer_img
+.PHONY: packer_iso
+.PHONY: packer
+.PHONY: qemu
+.PHONY: qemu_iso
+
+clean: 
+	@./log.sh warn 'Cleaning old artefacts'
+	@rm -rf artefacts/ packer/http/ansible-tree.tgz packer/http/seed.iso
+	@printf '\n'
+
+cloudinit:
+	@./log.sh info 'Generating cloud-init ISO'
+	@printf '\n'
+	@cloud-localds -v --network-config=cloud-init/network-config packer/http/seed.iso cloud-init/user-data cloud-init/meta-data
+	@printf '\n\n'
+
 ansible:
-	@mkdir -pv ansible
-	@(cd ansible; repo init \
-	  -u ssh://git@github.com/archlinux-ansible/ansible-manifest \
-	  -m default.xml \
-	  -b master)
-	@(cd ansible; repo sync)
-	@(cd ansible; repo start master --all)
+	@./log.sh info 'Tarring ansible tree'
+	@tar -czf packer/http/ansible-tree.tgz ansible
+	@printf '\n\n'
 
-mkosi/mkosi.skeleton/var/opt/ansible:
-	@mkdir -pv mkosi/mkosi.skeleton/var/opt/ansible
-ansible_mkosi: mkosi/mkosi.skeleton/var/opt/ansible
-	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible
-	@cp -rv ansible mkosi/mkosi.skeleton/var/opt/
-	@tree mkosi/mkosi.skeleton/var/opt/ 
+passwd_prompt:
+	@./log.sh warn 'Please enter your LUKS password (output will be hidden):'
+passwd: passwd_prompt
+	$(eval passwd := $(shell bash -c 'read -s CRYPT_PASSWD; echo "$${CRYPT_PASSWD}"'))
+	@printf '\n\n'
 
-artefacts/seed.iso:
-	@mkdir -pv artefacts
-cloudinit: artefacts/seed.iso
-	@cloud-localds -v --network-config=cloud-init/network-config artefacts/seed.iso cloud-init/user-data cloud-init/meta-data
-	@tree artefacts
+ifdef CRYPT
+packer_img: clean cloudinit ansible passwd
+else
+packer_img: clean cloudinit ansible
+	$(eval passwd := )
+endif
+	@./log.sh info 'Building packer disk image'
+	@printf '\n'
+	@packer build \
+	  -var 'iso_url=$(ARCH_URL)' \
+		-var 'iso_checksum_url=$(ARCH_CHECKSUM_URL)' \
+		-var 'crypt_passwd=$(passwd)' \
+		-timestamp-ui \
+		-only=img.qemu.arch \
+		packer/
+	@printf '\n\n'
 
-artefacts/archlinux.img:
-	@mkdir -pv artefacts
-mkosi_cache:
-	@mkdir -pv mkosi/mkosi.cache
-img: ansible_mkosi cloudinit artefacts/archlinux.img mkosi_cache
-	@cd mkosi; sudo mkosi --force
-img-stty: ansible_mkosi cloudinit artefacts/archlinux.img mkosi_cache
-	@cd mkosi; sudo mkosi --kernel-command-line='!* console=ttyS0 selinux=0 audit=0 rw' --force
+packer_iso:
+	@./log.sh info 'Building packer liveboot image'
+	@printf '\n'
+	@packer build \
+	  -var 'iso_url=$(ARCH_URL)' \
+		-var 'iso_checksum_url=$(ARCH_CHECKSUM_URL)' \
+		-timestamp-ui \
+		-only=liveboot.qemu.arch \
+		packer/
+	@printf '\n\n'
+packer: packer-img packer-iso
 
-usbselect:
-	@rm -fv resources/disk
-	@python3 resources/dd.py --noop
-
-usb: usbselect img
-	@sudo rm -rfv archlive/ archiso.cache/ "artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso"
-	@cp -rv /usr/share/archiso/configs/baseline/ archlive/
-	@cp -rv /usr/share/archiso/configs/releng/airootfs/etc/systemd/system/getty@tty1.service.d/ archlive/airootfs/etc/systemd/system/
-	@sudo mv -fv artefacts/archlinux.img archlive/airootfs/
-	@rm -rfv archlive/profiledef.sh archlive/airootfs/etc/systemd/system/cloud-init.target.wants
-	@mkdir -pv archlive/airootfs/root/ archiso.cache/
-	@cp -v resources/profiledef.sh archlive/profiledef.sh
-	@cp -v resources/dd.py archlive/airootfs/root/dd.py
-	@cp -v resources/dot_bashlogin archlive/airootfs/root/.bash_login
-	@sudo mkarchiso -v -w archiso.cache/ -o artefacts/ archlive
-	@sudo dd if="artefacts/archlinux-ddinst-$$(date +%Y.%m.%d)-x86_64.iso" of="$$(cat resources/disk)" bs=4M status=progress conv=fsync
-	@printf "%s\nstart=%s, size=102400, type=83\n" "$$(sudo sfdisk -d $$(readlink -f $$(cat resources/disk)))" "$$(sudo sfdisk -d $$(readlink -f $$(cat resources/disk)) | tail -1 | awk '{print $$4 $$6 }' | sed 's/,/ /g' | awk '{print int($$1) + int($$2) + 1}')" | sudo sfdisk "$$(readlink -f $$(cat resources/disk))"
-	@sudo dd if="artefacts/seed.iso" of="$$(cat resources/disk)-part3" bs=4M status=progress conv=fsync
-qemu: img-stty
+qemu:
 	@qemu-system-x86_64 \
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
-	  -nographic \
-	  -m 4096 -smp "$$(nproc)" \
+	  -m 4096 -smp "$(nproc)" \
 	  -netdev user,id=ens3 \
 	  -device e1000,netdev=ens3 \
-	  -drive file=artefacts/archlinux.img,if=virtio,format=raw \
-	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
-
-qemushell:
+	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw \
+	  -drive file=artefacts/iso/packer-arch,if=virtio,format=raw
+qemu_iso:
 	@qemu-system-x86_64 \
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
-	  -nographic \
-	  -m 4096 -smp "$$(nproc)" \
+	  -m 4096 -smp "$(nproc)" \
 	  -netdev user,id=ens3 \
 	  -device e1000,netdev=ens3 \
-	  -drive file=artefacts/archlinux.img,if=virtio,format=raw \
-	  -drive file=artefacts/seed.iso,if=virtio,media=cdrom
-
-clean:
-	@rm -rfv mkosi/mkosi.skeleton/var/opt/ansible/ liveboot/ resources/disk
-	@sudo rm -rfv artefacts/
-
-cacheclean: clean
-	@sudo rm -rfv mkosi/mkosi.cache/ archiso.cache/
-
-distclean: clean
-	@rm -rfv ansible cloud-init
+	  -drive file=artefacts/iso/packer-arch,if=virtio,format=raw \
+	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw

@@ -21,7 +21,7 @@ users:
     chpasswd:
       - expire: False
 runcmd:
-  - '/bootstrap.sh'
+  - '/postinst.sh'
 power_state:
   delay: '+1'
   mode: reboot
