@@ -28,8 +28,7 @@ rm -rf "${TMPDIR}"
 sudo -u aurbuilder yay -S --noconfirm ansible-aur-git
 
 # Set some default repos
-echo 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch
-Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
+echo 'Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
 # Cloud-init config
 printf '\ndatasource_list: [ NoCloud ]\n' >> /etc/cloud/cloud.cfg

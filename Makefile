@@ -1,11 +1,22 @@
 MIRROR ?= https://mirror.bytemark.co.uk
-VERSION ?= 2021.09.01
+
+# Use previous month's release for the first few days of the month
+YEAR := $(shell sh -c '[ "$$(date +'%d')" -gt "5" ] && date +"%Y" || date --date="-1 month" +"%Y"')
+MONTH := $(shell sh -c '[ "$$(date +'%d')" -gt "5" ] && date +"%m" || date --date="-1 month" +"%m"')
+VERSION ?= $(YEAR).$(MONTH).01
+
 CPU_ARCH ?= x86_64
 
 ARCH_URL := $(MIRROR)/archlinux/iso/$(VERSION)/archlinux-$(VERSION)-$(CPU_ARCH).iso
 ARCH_CHECKSUM_URL := $(MIRROR)/archlinux/iso/$(VERSION)/sha1sums.txt
 
 QEMU_IMG ?= img
+
+ifdef TTY
+	QEMU_TTY := -nographic
+else
+	QEMU_TTY :=
+endif
 
 .PHONY: clean
 .PHONY: cloudinit
@@ -15,8 +26,9 @@ QEMU_IMG ?= img
 .PHONY: packer_img
 .PHONY: packer_iso
 .PHONY: packer
-.PHONY: qemu
+.PHONY: qemu_img
 .PHONY: qemu_iso
+.PHONY: qemu
 
 clean: 
 	@./log.sh warn 'Cleaning old artefacts'
@@ -41,9 +53,9 @@ passwd: passwd_prompt
 	@printf '\n\n'
 
 ifdef CRYPT
-packer_img: clean cloudinit ansible passwd
+packer_img: clean ansible passwd
 else
-packer_img: clean cloudinit ansible
+packer_img: clean ansible
 	$(eval passwd := )
 endif
 	@./log.sh info 'Building packer disk image'
@@ -57,7 +69,7 @@ endif
 		packer/
 	@printf '\n\n'
 
-packer_iso:
+packer_iso: cloudinit
 	@./log.sh info 'Building packer liveboot image'
 	@printf '\n'
 	@packer build \
@@ -67,19 +79,19 @@ packer_iso:
 		-only=liveboot.qemu.arch \
 		packer/
 	@printf '\n\n'
-packer: packer-img packer-iso
+packer: packer_img packer_iso
 
-qemu:
-	@qemu-system-x86_64 \
+qemu_img:
+	@qemu-system-x86_64 $(QEMU_TTY) \
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
 	  -m 4096 -smp "$(nproc)" \
 	  -netdev user,id=ens3 \
 	  -device e1000,netdev=ens3 \
-	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw \
-	  -drive file=artefacts/iso/packer-arch,if=virtio,format=raw
+	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw
+
 qemu_iso:
-	@qemu-system-x86_64 \
+	@qemu-system-x86_64 $(QEMU_TTY) \
 	  -enable-kvm \
 	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
 	  -m 4096 -smp "$(nproc)" \
@@ -87,3 +99,13 @@ qemu_iso:
 	  -device e1000,netdev=ens3 \
 	  -drive file=artefacts/iso/packer-arch,if=virtio,format=raw \
 	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw
+
+qemu:
+	@qemu-system-x86_64 $(QEMU_TTY) \
+	  -enable-kvm \
+	  -bios /usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
+	  -m 4096 -smp "$(nproc)" \
+	  -netdev user,id=ens3 \
+	  -device e1000,netdev=ens3 \
+	  -drive file=artefacts/img/packer-arch,if=virtio,format=raw \
+	  -drive file=artefacts/iso/packer-arch,if=virtio,format=raw
